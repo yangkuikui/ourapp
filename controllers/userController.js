@@ -3,12 +3,20 @@
 //   logout: function(){}
 // }
 
+const User = require("../models/User")
+
 exports.login = function () {}
 
 exports.logout = function () {}
 
 exports.register = function (req, res) {
-  res.send("Thank you for trying to submit!")
+  let user = new User(req.body)
+  user.register()
+  if (user.errors.length) {
+    res.send(user.errors)
+  } else {
+    res.send("No errors.")
+  }
 }
 
 exports.home = function (req, res) {
