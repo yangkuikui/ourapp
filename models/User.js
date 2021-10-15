@@ -1,3 +1,4 @@
+const usersCollection = require("../db").collection("users") //../
 const validator = require("validator")
 
 let User = function (data) {
@@ -6,13 +7,13 @@ let User = function (data) {
 }
 
 User.prototype.cleanUp = function () {
-  if (typeof (this.data.username != "string")) {
+  if (typeof this.data.username != "string") {
     this.data.username = ""
   }
-  if (typeof (this.data.email != "string")) {
+  if (typeof this.data.email != "string") {
     this.data.email = ""
   }
-  if (typeof (this.data.password != "string")) {
+  if (typeof this.data.password != "string") {
     this.data.password = ""
   }
   this.data = {
@@ -62,6 +63,10 @@ User.prototype.register = function () {
   this.validate()
 
   // save to DB
+
+  if (!this.errors.length) {
+    usersCollection.insertOne(this.data)
+  }
 }
 
 module.exports = User
