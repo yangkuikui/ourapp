@@ -14,15 +14,21 @@ exports.login = function (req, res) {
         req.session.user = {
           username: user.data.username
         }
-        res.send("user dashboard will come here.")
+        res.render("home-dashboard", { username: req.session.user.username })
       } else {
-        res.send("go back to homepage.")
+        res.redirect("/")
       }
     })
     .catch(() => {})
 }
 
-exports.logout = function () {}
+exports.logout = async function (req, res) {
+  if (req.session.user) {
+    await req.session.destroy()
+    res.redirect("/")
+  } else {
+  }
+}
 
 exports.register = function (req, res) {
   let user = new User(req.body)
