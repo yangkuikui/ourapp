@@ -11,6 +11,9 @@ exports.login = function (req, res) {
     .login()
     .then(result => {
       if (result == "true") {
+        req.session.user = {
+          username: user.data.username
+        }
         res.send("user dashboard will come here.")
       } else {
         res.send("go back to homepage.")
@@ -32,5 +35,9 @@ exports.register = function (req, res) {
 }
 
 exports.home = function (req, res) {
-  res.render("home-guest")
+  if (req.session.user) {
+    res.render("home-dashboard", { username: req.session.user.username })
+  } else {
+    res.render("home-guest")
+  }
 }
