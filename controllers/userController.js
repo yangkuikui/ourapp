@@ -11,6 +11,7 @@ exports.login = function (req, res) {
     .login()
     .then(result => {
       req.session.user = {
+        avatar: user.avatar,
         username: user.data.username
       }
       req.session.save(() => {
@@ -40,7 +41,7 @@ exports.register = function (req, res) {
   user
     .register()
     .then(() => {
-      req.session.user = { username: user.data.username }
+      req.session.user = { username: user.data.username, avatar: user.avatar }
     })
     .catch(regErrors => {
       // use forEach to loop each error
@@ -57,7 +58,7 @@ exports.register = function (req, res) {
 
 exports.home = function (req, res) {
   if (req.session.user) {
-    res.render("home-dashboard", { username: req.session.user.username })
+    res.render("home-dashboard", { username: req.session.user.username, avatar: req.session.user.avatar })
   } else {
     res.render("home-guest", { errors: req.flash("errors"), regErrors: req.flash("regErrors") }) // flash package let us display errors and soon delete it for us.
   }

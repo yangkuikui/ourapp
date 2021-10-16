@@ -1,6 +1,7 @@
 const usersCollection = require("../db").db().collection("users") //../
 const validator = require("validator")
 const bcrypt = require("bcryptjs")
+const md5 = require("md5")
 
 let User = function (data) {
   this.data = data // add a property to store incoming data via arg
@@ -86,6 +87,8 @@ User.prototype.login = function () {
       try {
         const trueUser = await usersCollection.findOne({ username: this.data.username })
         if (trueUser && bcrypt.compareSync(this.data.password, trueUser.password)) {
+          this.data = trueUser // for incoming data has no email info.
+          this.getAvatar()
           resolve("Success")
         } else {
           reject("Invalid username / password.")
@@ -109,13 +112,17 @@ User.prototype.register = function () {
       // hash user password
       let salt = bcrypt.genSaltSync(10)
       this.data.password = bcrypt.hashSync(this.data.password, salt)
-
       await usersCollection.insertOne(this.data)
+      this.getAvatar() // store it into user object in memory instead of into database.
       resolve()
     } else {
       reject(this.errors)
     }
   })
+}
+
+User.prototype.getAvatar = function () {
+  this.avatar = `https://gravatar.com/avatar/${md5(this.data.email)}?s=128`
 }
 
 module.exports = User
