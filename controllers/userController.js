@@ -12,7 +12,8 @@ exports.login = function (req, res) {
     .then(result => {
       req.session.user = {
         avatar: user.avatar,
-        username: user.data.username
+        username: user.data.username,
+        _id: user.data._id //  _id property added to user.data through insertOne() function.
       }
       req.session.save(() => {
         // for updating session object in database will take a while, so save() to make it surely completed before run res.render
@@ -41,7 +42,7 @@ exports.register = function (req, res) {
   user
     .register()
     .then(() => {
-      req.session.user = { username: user.data.username, avatar: user.avatar }
+      req.session.user = { username: user.data.username, avatar: user.avatar, _id: user.data._id }
     })
     .catch(regErrors => {
       // use forEach to loop each error

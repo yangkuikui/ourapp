@@ -112,7 +112,7 @@ User.prototype.register = function () {
       // hash user password
       let salt = bcrypt.genSaltSync(10)
       this.data.password = bcrypt.hashSync(this.data.password, salt)
-      await usersCollection.insertOne(this.data)
+      await usersCollection.insertOne(this.data) // this.data object modified. _id property added.
       this.getAvatar() // store it into user object in memory instead of into database.
       resolve()
     } else {
