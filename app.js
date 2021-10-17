@@ -15,6 +15,11 @@ let sessionOptions = session({
 app.use(sessionOptions)
 app.use(flash())
 
+app.use(function (req, res, next) {
+  res.locals.user = req.session.user // we now have access to a user property from within any of ejs template
+  next()
+}) // this middleware function should be above router to let every router to use it.
+
 const router = require("./router") // require does 2 things. #1 execute that file immediately. #2 return whatever that file exports
 
 app.use(express.urlencoded({ extended: false })) // let express to add user submitted data onto request object.
