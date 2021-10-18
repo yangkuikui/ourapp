@@ -47,7 +47,7 @@ Post.prototype.validate = function () {
   }
 }
 
-Post.reusablePostQuery = function (uniqueOperations) {
+Post.reusablePostQuery = function (uniqueOperations, visitorid) {
   // adding a function(property) to a function.
 
   return new Promise(async (resolve, reject) => {
@@ -65,12 +65,14 @@ Post.reusablePostQuery = function (uniqueOperations) {
           title: 1,
           body: 1,
           createdDate: 1,
+          authorId: "$author",
           author: { $arrayElemAt: ["$authorInfo", 0] }
         }
       }
     ])
     let posts = await postsCollection.aggregate(aggOperations).toArray()
     posts.map(post => {
+      post.isVisitorOwner = post.authorId.equals(visitorid)
       post.author = {
         username: post.author.username,
         avatar: new User(post.author, true).avatar
@@ -81,7 +83,7 @@ Post.reusablePostQuery = function (uniqueOperations) {
   })
 }
 
-Post.findSingleById = function (id) {
+Post.findSingleById = function (id, visitorid) {
   // adding a function(property) to a function.
 
   return new Promise(async (resolve, reject) => {
@@ -91,7 +93,7 @@ Post.findSingleById = function (id) {
       return
     }
 
-    let posts = await Post.reusablePostQuery([{ $match: { _id: new ObjectID(id) } }])
+    let posts = await Post.reusablePostQuery([{ $match: { _id: new ObjectID(id) } }], visitorid)
     if (posts.length) {
       // console.log(posts[0])
       resolve(posts[0])

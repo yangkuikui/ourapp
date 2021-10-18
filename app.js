@@ -16,7 +16,15 @@ app.use(sessionOptions)
 app.use(flash())
 
 app.use(function (req, res, next) {
-  res.locals.user = req.session.user // we now have access to a user property from within any of ejs template
+  // make current user id available on the req object.
+  if (req.session.user) {
+    req.visitorId = req.session.user._id
+  } else {
+    req.visitorId = 0
+  }
+
+  // make user session data available from within view template.
+  res.locals.user = req.session.user
   next()
 }) // this middleware function should be above router to let every router to use it.
 
