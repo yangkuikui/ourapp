@@ -46,4 +46,23 @@ Post.prototype.validate = function () {
   }
 }
 
+Post.findSingleById = function (id) {
+  // adding a function(property) to a function.
+
+  return new Promise(async (resolve, reject) => {
+    if (typeof id != "string" || !ObjectID.isValid(id)) {
+      // make sure user input data clean(simple string text)
+      reject()
+      return
+    }
+
+    let post = await postsCollection.findOne({ _id: new ObjectID(id) })
+    if (post) {
+      resolve(post)
+    } else {
+      reject()
+    }
+  })
+}
+
 module.exports = Post
