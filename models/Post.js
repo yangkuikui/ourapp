@@ -98,8 +98,36 @@ Post.findSingleById = function (id) {
 Post.findByAuthorId = function (id) {
   return new Promise(async (resolve, reject) => {
     try {
-      let posts = await postsCollection.find({ author: new ObjectID(id) }).toArray()
-      console.log(posts)
+      let posts = await postsCollection
+        .aggregate([
+          { $match: { author: new ObjectID(id) } },
+          {
+            $lookup: {
+              from: "users",
+              localField: "author",
+              foreignField: "_id",
+              as: "authorInfo"
+            }
+          },
+          {
+            $project: {
+              title: 1,
+              body: 1,
+              createdDate: 1,
+              author: { $arrayElemAt: ["$authorInfo", 0] }
+            }
+          }
+        ])
+        .toArray()
+      posts.map(post => {
+        post.author = {
+          username: post.author.username,
+          avatar: new User(post.author, true).avatar // can not say User.getAvatar()
+        }
+        return post
+      })
+
+      // console.log(posts)
       resolve(posts)
     } catch {
       reject()
