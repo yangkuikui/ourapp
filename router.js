@@ -14,4 +14,7 @@ router.get("/create-post", userController.mustBeLoggedIn, postController.viewCre
 router.post("/create-post", userController.mustBeLoggedIn, postController.create)
 router.get("/post/:id", postController.viewSingle)
 
+// profile related routes
+router.get("/profile/:username", userController.ifUserExists, userController.profilePostsScreen)
+
 module.exports = router

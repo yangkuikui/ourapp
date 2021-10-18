@@ -95,4 +95,15 @@ Post.findSingleById = function (id) {
   })
 }
 
+Post.findByAuthorId = function (id) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let posts = await postsCollection.find({ author: new ObjectID(id) }).toArray()
+      console.log(posts)
+      resolve(posts)
+    } catch {
+      reject()
+    }
+  })
+}
 module.exports = Post

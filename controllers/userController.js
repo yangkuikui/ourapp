@@ -4,6 +4,7 @@
 // }
 
 const User = require("../models/User")
+const Post = require("../models/Post")
 
 exports.login = function (req, res) {
   let user = new User(req.body)
@@ -74,4 +75,26 @@ exports.mustBeLoggedIn = function (req, res, next) {
       res.redirect("/")
     })
   }
+}
+
+exports.ifUserExists = async function (req, res, next) {
+  let user = await User.findUserByUsername(req.params.username)
+  if (user) {
+    req.profileUser = user
+    next()
+  } else {
+    res.render("404")
+  }
+}
+
+exports.profilePostsScreen = function (req, res) {
+  // pull posts of that profile user.
+
+  Post.findByAuthorId(req.profileUser.id)
+    .then(posts => {
+      res.render("profile", { user: req.profileUser, posts: posts })
+    })
+    .catch(() => {
+      res.render("404")
+    })
 }
