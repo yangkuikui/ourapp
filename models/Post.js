@@ -47,6 +47,40 @@ Post.prototype.validate = function () {
   }
 }
 
+Post.reusablePostQuery = function (uniqueOperations) {
+  // adding a function(property) to a function.
+
+  return new Promise(async (resolve, reject) => {
+    let aggOperations = uniqueOperations.concat([
+      {
+        $lookup: {
+          from: "users",
+          localField: "author",
+          foreignField: "_id",
+          as: "authorInfo"
+        }
+      },
+      {
+        $project: {
+          title: 1,
+          body: 1,
+          createdDate: 1,
+          author: { $arrayElemAt: ["$authorInfo", 0] }
+        }
+      }
+    ])
+    let posts = await postsCollection.aggregate(aggOperations).toArray()
+    posts.map(post => {
+      post.author = {
+        username: post.author.username,
+        avatar: new User(post.author, true).avatar
+      }
+      return post
+    })
+    resolve(posts)
+  })
+}
+
 Post.findSingleById = function (id) {
   // adding a function(property) to a function.
 
@@ -57,35 +91,7 @@ Post.findSingleById = function (id) {
       return
     }
 
-    let posts = await postsCollection
-      .aggregate([
-        { $match: { _id: new ObjectID(id) } },
-        {
-          $lookup: {
-            from: "users",
-            localField: "author",
-            foreignField: "_id",
-            as: "authorInfo"
-          }
-        },
-        {
-          $project: {
-            title: 1,
-            body: 1,
-            createdDate: 1,
-            author: { $arrayElemAt: ["$authorInfo", 0] }
-          }
-        }
-      ])
-      .toArray()
-    // clean up author property in each post object.
-    posts.map(post => {
-      post.author = {
-        username: post.author.username,
-        avatar: new User(post.author, true).avatar // can not say User.getAvatar()
-      }
-      return post
-    })
+    let posts = await Post.reusablePostQuery([{ $match: { _id: new ObjectID(id) } }])
     if (posts.length) {
       // console.log(posts[0])
       resolve(posts[0])
@@ -96,42 +102,7 @@ Post.findSingleById = function (id) {
 }
 
 Post.findByAuthorId = function (id) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      let posts = await postsCollection
-        .aggregate([
-          { $match: { author: new ObjectID(id) } },
-          {
-            $lookup: {
-              from: "users",
-              localField: "author",
-              foreignField: "_id",
-              as: "authorInfo"
-            }
-          },
-          {
-            $project: {
-              title: 1,
-              body: 1,
-              createdDate: 1,
-              author: { $arrayElemAt: ["$authorInfo", 0] }
-            }
-          }
-        ])
-        .toArray()
-      posts.map(post => {
-        post.author = {
-          username: post.author.username,
-          avatar: new User(post.author, true).avatar // can not say User.getAvatar()
-        }
-        return post
-      })
-
-      // console.log(posts)
-      resolve(posts)
-    } catch {
-      reject()
-    }
-  })
+  return Post.reusablePostQuery([{ $match: { author: new ObjectID(id) } }, { $sort: { createdDate: -1 } }])
 }
+
 module.exports = Post
