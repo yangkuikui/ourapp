@@ -143,4 +143,19 @@ Post.prototype.actuallyUpdate = function () {
   })
 }
 
+Post.delete = function (postId, userId) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let post = await Post.findSingleById(postId, userId)
+
+      if (post.isVisitorOwner) {
+        await postsCollection.deleteOne({ _id: new ObjectID(postId) })
+        resolve()
+      } else {
+      }
+    } catch {
+      reject()
+    }
+  })
+}
 module.exports = Post
