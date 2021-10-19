@@ -2,10 +2,11 @@ const postsCollection = require("../db").db().collection("posts")
 const ObjectID = require("mongodb").ObjectID
 const User = require("./User")
 
-let Post = function (data, userid) {
+let Post = function (data, userid, requestedPostId) {
   this.data = data
   this.errors = []
   this.userid = userid
+  this.requestedPostId = requestedPostId
 }
 
 Post.prototype.create = function () {
@@ -15,7 +16,7 @@ Post.prototype.create = function () {
     if (!this.errors.length) {
       try {
         await postsCollection.insertOne(this.data)
-        resolve("success")
+        resolve("Post successfully created")
       } catch {
         this.errors.push("Please try again later.")
         reject(this.errors)
@@ -105,6 +106,39 @@ Post.findSingleById = function (id, visitorid) {
 
 Post.findByAuthorId = function (id) {
   return Post.reusablePostQuery([{ $match: { author: new ObjectID(id) } }, { $sort: { createdDate: -1 } }])
+}
+
+Post.prototype.update = function () {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let post = await Post.findSingleById(this.requestedPostId, this.userid)
+      if (post.isVisitorOwner) {
+        let status = await this.actuallyUpdate()
+        resolve(status)
+      } else {
+        reject()
+      }
+    } catch {
+      reject()
+    }
+  })
+}
+
+Post.prototype.actuallyUpdate = function () {
+  return new Promise(async (resolve, reject) => {
+    try {
+      this.validate()
+      this.cleanUp()
+      if (!this.errors.length) {
+        await postsCollection.findOneAndUpdate({ _id: new ObjectID(this.requestedPostId) }, { $set: { title: this.data.title, body: this.data.body } })
+        resolve("success")
+      } else {
+        resolve("failure")
+      }
+    } catch {
+      reject()
+    }
+  })
 }
 
 module.exports = Post

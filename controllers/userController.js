@@ -62,7 +62,7 @@ exports.home = function (req, res) {
   if (req.session.user) {
     res.render("home-dashboard")
   } else {
-    res.render("home-guest", { errors: req.flash("errors"), regErrors: req.flash("regErrors") }) // flash package let us display errors and soon delete it for us.
+    res.render("home-guest", { regErrors: req.flash("regErrors") }) // flash package let us display errors and soon delete it for us.
   }
 }
 
