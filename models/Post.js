@@ -73,9 +73,12 @@ Post.reusablePostQuery = function (uniqueOperations, visitorid) {
         }
       }
     ])
+
     let posts = await postsCollection.aggregate(aggOperations).toArray()
     posts.map(post => {
       post.isVisitorOwner = post.authorId.equals(visitorid)
+
+      post.authorId = undefined
       post.author = {
         username: post.author.username,
         avatar: new User(post.author, true).avatar
@@ -158,4 +161,19 @@ Post.delete = function (postId, userId) {
     }
   })
 }
+
+Post.search = function (searchTerm) {
+  return new Promise(async (resolve, reject) => {
+    // postsCollection.createIndex({ title: "text", body: "text" })
+
+    if (typeof searchTerm == "string") {
+      let posts = await Post.reusablePostQuery([{ $match: { $text: { $search: searchTerm } } }])
+      // console.log(posts)
+      resolve(posts)
+    } else {
+      reject()
+    }
+  })
+}
+
 module.exports = Post

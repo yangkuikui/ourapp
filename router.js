@@ -20,4 +20,7 @@ router.post("/post/:id/delete", postController.delete)
 // profile related routes
 router.get("/profile/:username", userController.ifUserExists, userController.profilePostsScreen)
 
+// search feature
+router.post("/search", postController.search)
+
 module.exports = router
