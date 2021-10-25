@@ -5,6 +5,7 @@
 
 const User = require("../models/User")
 const Post = require("../models/Post")
+const Follow = require("../models/Follow")
 
 exports.login = function (req, res) {
   let user = new User(req.body)
@@ -92,9 +93,19 @@ exports.profilePostsScreen = function (req, res) {
 
   Post.findByAuthorId(req.profileUser.id)
     .then(posts => {
-      res.render("profile", { user: req.profileUser, posts: posts })
+      res.render("profile", { user: req.profileUser, posts: posts, isFollowing: req.isFollowing })
     })
     .catch(() => {
       res.render("404")
     })
+}
+
+exports.sharedProfileData = async function (req, res, next) {
+  let isFollowing = false
+  if (req.session.user) {
+    isFollowing = await Follow.isVisitorFollowing(req.visitorId, req.profileUser.id)
+  }
+  req.isFollowing = isFollowing
+
+  next()
 }
