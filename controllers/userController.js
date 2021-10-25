@@ -93,7 +93,7 @@ exports.profilePostsScreen = function (req, res) {
 
   Post.findByAuthorId(req.profileUser.id)
     .then(posts => {
-      res.render("profile", { user: req.profileUser, posts: posts, isFollowing: req.isFollowing })
+      res.render("profile", { currentPage: "posts", user: req.profileUser, posts: posts, isFollowing: req.isFollowing })
     })
     .catch(() => {
       res.render("404")
@@ -108,4 +108,22 @@ exports.sharedProfileData = async function (req, res, next) {
   req.isFollowing = isFollowing
 
   next()
+}
+
+exports.profileFollowersScreen = async function (req, res) {
+  try {
+    let followers = await Follow.getFollowersById(req.profileUser.id)
+    res.render("profile-followers", { currentPage: "followers", user: req.profileUser, isFollowing: req.isFollowing, followers: followers })
+  } catch {
+    res.render("404")
+  }
+}
+
+exports.profileFollowingScreen = async function (req, res) {
+  try {
+    let followers = await Follow.getFollowingById(req.profileUser.id)
+    res.render("profile-following", { currentPage: "following", user: req.profileUser, isFollowing: req.isFollowing, followers: followers })
+  } catch {
+    res.render("404")
+  }
 }

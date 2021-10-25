@@ -76,4 +76,66 @@ Follow.isVisitorFollowing = async function (followingId, followedId) {
   }
 }
 
+Follow.getFollowersById = function (userid) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let followers = await followsCollection
+        .aggregate([
+          { $match: { followedId: userid } },
+          { $lookup: { from: "users", localField: "followingId", foreignField: "_id", as: "userDoc" } },
+          {
+            $project: {
+              username: { $arrayElemAt: ["$userDoc.username", 0] },
+              email: { $arrayElemAt: ["$userDoc.email", 0] }
+            }
+          }
+        ])
+        .toArray() // find userDoc from within followsCollection
+      followers = followers.map(follower => {
+        let user = new User(follower, true)
+
+        return {
+          username: follower.username,
+          avatar: user.avatar
+        }
+      })
+
+      resolve(followers)
+    } catch {
+      reject()
+    }
+  })
+}
+
+Follow.getFollowingById = function (userid) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let followers = await followsCollection
+        .aggregate([
+          { $match: { followingId: userid } },
+          { $lookup: { from: "users", localField: "followedId", foreignField: "_id", as: "userDoc" } },
+          {
+            $project: {
+              username: { $arrayElemAt: ["$userDoc.username", 0] },
+              email: { $arrayElemAt: ["$userDoc.email", 0] }
+            }
+          }
+        ])
+        .toArray() // find userDoc from within followsCollection
+      followers = followers.map(follower => {
+        let user = new User(follower, true)
+
+        return {
+          username: follower.username,
+          avatar: user.avatar
+        }
+      })
+
+      resolve(followers)
+    } catch {
+      reject()
+    }
+  })
+}
+
 module.exports = Follow
