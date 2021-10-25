@@ -11,7 +11,7 @@ let Follow = function (followingId, followedUsername) {
 Follow.prototype.delete = function () {
   return new Promise(async (resolve, reject) => {
     try {
-      await this.validate()
+      await this.validate("delete")
       await followsCollection.deleteOne({ followingId: new ObjectID(this.followingId), followedId: this.followedId })
       resolve()
     } catch {
@@ -23,7 +23,7 @@ Follow.prototype.delete = function () {
 Follow.prototype.create = function () {
   return new Promise(async (resolve, reject) => {
     this.cleanUp()
-    await this.validate()
+    await this.validate("create")
     if (!this.errors.length) {
       await followsCollection.insertOne({ followingId: new ObjectID(this.followingId), followedId: this.followedId })
       resolve()
@@ -39,18 +39,36 @@ Follow.prototype.cleanUp = function () {
   }
 }
 
-Follow.prototype.validate = async function () {
-  let existUser = await User.findUserByUsername(this.followedUsername)
-  if (existUser) {
-    this.followedId = existUser.id
-  } else {
-    this.errors.push("You cannot follow a user that do not exist.")
-  }
+Follow.prototype.validate = function (action) {
+  return new Promise(async (resolve, reject) => {
+    let existUser = await User.findUserByUsername(this.followedUsername)
+    if (existUser) {
+      this.followedId = existUser.id
+    } else {
+      this.errors.push("You cannot follow a user that do not exist")
+    }
+
+    let existFollow = await followsCollection.findOne({ followedId: this.followedId, followingId: new ObjectID(this.followingId) })
+    if (action == "create") {
+      if (existFollow) this.errors.push("You are already following this user")
+    }
+
+    if (action == "delete") {
+      if (!existFollow) this.errors.push("You cannot stop following someone you have not already followed")
+    }
+
+    // set can not follow oneself.
+    // if () {
+    //   this.errors.push("You can not follow yourself")
+    // }
+
+    resolve()
+  })
 }
 
 Follow.isVisitorFollowing = async function (followingId, followedId) {
   let followDoc = await followsCollection.findOne({ followingId: new ObjectID(followingId), followedId: followedId })
-  console.log(followDoc) // can not find.
+  // console.log(followDoc) // can not find.
   if (followDoc) {
     return true
   } else {
