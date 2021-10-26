@@ -50,4 +50,17 @@ app.set("view engine", "ejs")
 // use router
 app.use("/", router)
 
-module.exports = app
+// socket.io
+const server = require("http").createServer(app)
+const io = require("socket.io")(server)
+io.on("connection", socket => {
+  // socket represents the connection between server and browser
+  // console.log("a new user connected!")
+  socket.on("chatMsgFromBrowser", data => {
+    // set 'data' to receive that incoming data.
+    console.log(data.message) // 'message' was made within front-end chat.js/sendMsgToServer()
+    io.emit("chatMsgFromServer", { message: data.message }) // server sends msg to all connected browsers
+  })
+})
+
+module.exports = server

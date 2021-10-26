@@ -3,6 +3,8 @@ export default class Chat {
     this.openedYet = false // not yet opened
     this.chatWrapper = document.querySelector(".chat-wrapper")
     this.injectHTML()
+    this.chatField = document.querySelector("#chatField")
+    this.chatForm = document.querySelector("#chatForm")
 
     this.openChat = document.querySelector(".header-chat-icon")
     this.closeChat = document.querySelector(".chat-title-bar-close")
@@ -12,10 +14,30 @@ export default class Chat {
   events() {
     this.openChat.addEventListener("click", () => this.showChat())
     this.closeChat.addEventListener("click", () => this.hideChat())
+    this.chatForm.addEventListener("submit", e => {
+      e.preventDefault()
+      this.sendMsgToServer()
+    })
+  }
+
+  sendMsgToServer() {
+    // send user input to server
+    this.socket.emit("chatMsgFromBrowser", {
+      // we are free to create as many types of events as we want
+      message: this.chatField.value
+    })
+    this.chatField.value = ""
+    this.chatField.focus()
   }
 
   openConnection() {
-    alert("open a connection.")
+    // open a connection between browser and server
+    this.socket = io()
+
+    // to receive msg sended from server
+    this.socket.on("chatMsgFromServer", data => {
+      alert(data.message)
+    })
   }
 
   showChat() {
