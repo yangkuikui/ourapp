@@ -13,7 +13,7 @@
 </h2>
 
 <div class="profile-nav nav nav-tabs pt-2 mb-4">
-  <a href="/profile/<%= user.username %>" class="profile-nav-link nav-item nav-link <%= currentPage == 'posts' ? 'active' : '' %>"> Posts: 3</a>
-  <a href="/profile/<%= user.username %>/followers" class="profile-nav-link nav-item nav-link <%= currentPage == 'followers' ? 'active' : '' %>">Followers: 3</a>
-  <a href="/profile/<%= user.username %>/following" class="profile-nav-link nav-item nav-link <%= currentPage == 'following' ? 'active' : '' %>">Following: 2</a>
+  <a href="/profile/<%= user.username %>" class="profile-nav-link nav-item nav-link <%= currentPage == 'posts' ? 'active' : '' %>"> Posts: <%= count.posts %></a>
+  <a href="/profile/<%= user.username %>/followers" class="profile-nav-link nav-item nav-link <%= currentPage == 'followers' ? 'active' : '' %>">Followers: <%= count.followers %></a>
+  <a href="/profile/<%= user.username %>/following" class="profile-nav-link nav-item nav-link <%= currentPage == 'following' ? 'active' : '' %>">Following: <%= count.following %></a>
 </div>

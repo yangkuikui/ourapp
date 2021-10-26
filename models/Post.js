@@ -176,4 +176,16 @@ Post.search = function (searchTerm) {
   })
 }
 
+Post.countPostsByAuthor = function (userid) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let postCount = await postsCollection.countDocuments({ author: userid })
+
+      resolve(postCount)
+    } catch {
+      reject()
+    }
+  })
+}
+
 module.exports = Post
