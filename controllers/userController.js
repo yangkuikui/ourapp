@@ -59,11 +59,18 @@ exports.register = function (req, res) {
     })
 }
 
-exports.home = function (req, res) {
-  if (req.session.user) {
-    res.render("home-dashboard")
-  } else {
-    res.render("home-guest", { regErrors: req.flash("regErrors") }) // flash package let us display errors and soon delete it for us.
+exports.home = async function (req, res) {
+  try {
+    if (req.session.user) {
+      // fetch followed users posts.
+      let posts = await Post.getFeed(req.session.user._id)
+
+      res.render("home-dashboard", { posts: posts })
+    } else {
+      res.render("home-guest", { regErrors: req.flash("regErrors") }) // flash package let us display errors and soon delete it for us.
+    }
+  } catch {
+    res.render("404")
   }
 }
 
@@ -97,7 +104,7 @@ exports.profilePostsScreen = function (req, res) {
 
   Post.findByAuthorId(req.profileUser.id)
     .then(posts => {
-      res.render("profile", { count: { posts: req.postCount, followers: req.followerCount, following: req.followingCount }, currentPage: "posts", user: req.profileUser, posts: posts, isFollowing: req.isFollowing })
+      res.render("profile", { isVisitorsProfile: req.isVisitorsProfile, count: { posts: req.postCount, followers: req.followerCount, following: req.followingCount }, currentPage: "posts", profileUser: req.profileUser, posts: posts, isFollowing: req.isFollowing })
     })
     .catch(() => {
       res.render("404")
@@ -107,10 +114,18 @@ exports.profilePostsScreen = function (req, res) {
 exports.sharedProfileData = async function (req, res, next) {
   try {
     let isFollowing = false
+    let isVisitorsProfile = false
+
     if (req.session.user) {
       isFollowing = await Follow.isVisitorFollowing(req.visitorId, req.profileUser.id)
+      req.isFollowing = isFollowing
+
+      if (req.session.user._id == req.profileUser.id) {
+        isVisitorsProfile = true
+      }
+
+      req.isVisitorsProfile = isVisitorsProfile
     }
-    req.isFollowing = isFollowing
 
     // retrieve post, follower, and following counts.
     let postCountPromise = Post.countPostsByAuthor(req.profileUser.id)
@@ -131,7 +146,7 @@ exports.sharedProfileData = async function (req, res, next) {
 exports.profileFollowersScreen = async function (req, res) {
   try {
     let followers = await Follow.getFollowersById(req.profileUser.id)
-    res.render("profile-followers", { count: { posts: req.postCount, followers: req.followerCount, following: req.followingCount }, currentPage: "followers", user: req.profileUser, isFollowing: req.isFollowing, followers: followers })
+    res.render("profile-followers", { isVisitorsProfile: req.isVisitorsProfile, count: { posts: req.postCount, followers: req.followerCount, following: req.followingCount }, currentPage: "followers", profileUser: req.profileUser, isFollowing: req.isFollowing, followers: followers })
   } catch {
     res.render("404")
   }
@@ -140,7 +155,7 @@ exports.profileFollowersScreen = async function (req, res) {
 exports.profileFollowingScreen = async function (req, res) {
   try {
     let followers = await Follow.getFollowingById(req.profileUser.id)
-    res.render("profile-following", { count: { posts: req.postCount, followers: req.followerCount, following: req.followingCount }, currentPage: "following", user: req.profileUser, isFollowing: req.isFollowing, followers: followers })
+    res.render("profile-following", { isVisitorsProfile: req.isVisitorsProfile, count: { posts: req.postCount, followers: req.followerCount, following: req.followingCount }, currentPage: "following", profileUser: req.profileUser, isFollowing: req.isFollowing, followers: followers })
   } catch {
     res.render("404")
   }

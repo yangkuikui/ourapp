@@ -22,13 +22,17 @@ Follow.prototype.delete = function () {
 
 Follow.prototype.create = function () {
   return new Promise(async (resolve, reject) => {
-    this.cleanUp()
-    await this.validate("create")
-    if (!this.errors.length) {
-      await followsCollection.insertOne({ followingId: new ObjectID(this.followingId), followedId: this.followedId })
-      resolve()
-    } else {
-      reject(this.errors)
+    try {
+      this.cleanUp()
+      await this.validate("create")
+      if (!this.errors.length) {
+        await followsCollection.insertOne({ followingId: new ObjectID(this.followingId), followedId: this.followedId })
+        resolve()
+      } else {
+        reject(this.errors)
+      }
+    } catch {
+      reject()
     }
   })
 }
@@ -41,39 +45,47 @@ Follow.prototype.cleanUp = function () {
 
 Follow.prototype.validate = function (action) {
   return new Promise(async (resolve, reject) => {
-    let existUser = await User.findUserByUsername(this.followedUsername)
-    if (existUser) {
-      this.followedId = existUser.id
-    } else {
-      this.errors.push("You cannot follow a user that do not exist")
+    try {
+      let existUser = await User.findUserByUsername(this.followedUsername)
+      if (existUser) {
+        this.followedId = existUser.id
+      } else {
+        this.errors.push("You cannot follow a user that do not exist")
+      }
+
+      let existFollow = await followsCollection.findOne({ followedId: this.followedId, followingId: new ObjectID(this.followingId) })
+      if (action == "create") {
+        if (existFollow) this.errors.push("You are already following this user")
+      }
+
+      if (action == "delete") {
+        if (!existFollow) this.errors.push("You cannot stop following someone you have not already followed")
+      }
+
+      // set can not follow oneself.
+      // let isSame = this.followingId == this.followedId
+      // console.log(isSame)
+      // if (isSame) {
+      //   this.errors.push("You can not follow yourself")
+      // }
+
+      resolve()
+    } catch {
+      reject()
     }
-
-    let existFollow = await followsCollection.findOne({ followedId: this.followedId, followingId: new ObjectID(this.followingId) })
-    if (action == "create") {
-      if (existFollow) this.errors.push("You are already following this user")
-    }
-
-    if (action == "delete") {
-      if (!existFollow) this.errors.push("You cannot stop following someone you have not already followed")
-    }
-
-    // set can not follow oneself.
-    // if () {
-    //   this.errors.push("You can not follow yourself")
-    // }
-
-    resolve()
   })
 }
 
 Follow.isVisitorFollowing = async function (followingId, followedId) {
-  let followDoc = await followsCollection.findOne({ followingId: new ObjectID(followingId), followedId: followedId })
-  // console.log(followDoc) // can not find.
-  if (followDoc) {
-    return true
-  } else {
-    return false
-  }
+  try {
+    let followDoc = await followsCollection.findOne({ followingId: new ObjectID(followingId), followedId: followedId })
+    // console.log(followDoc) // can not find.
+    if (followDoc) {
+      return true
+    } else {
+      return false
+    }
+  } catch {}
 }
 
 Follow.getFollowersById = function (userid) {

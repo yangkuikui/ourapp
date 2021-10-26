@@ -1,11 +1,11 @@
 <h2>
-  <img class="avatar-small" src="<%= user.avatar %>" /> <%= user.username %> <% if(user) { if(isFollowing){ %>
-  <form class="ml-2 d-inline" action="/removeFollow/<%= user.username %>" method="POST">
+  <img class="avatar-small" src="<%= profileUser.avatar %>" /> <%= profileUser.username %> <% if(user && !isVisitorsProfile) { if(isFollowing){ %>
+  <form class="ml-2 d-inline" action="/removeFollow/<%= profileUser.username %>" method="POST">
     <button class="btn btn-danger btn-sm">Stop Following <i class="fas fa-user-times"></i></button>
   </form>
 
   <%} else {%>
-  <form class="ml-2 d-inline" action="/addFollow/<%= user.username %>" method="POST">
+  <form class="ml-2 d-inline" action="/addFollow/<%= profileUser.username %>" method="POST">
     <button class="btn btn-primary btn-sm">Follow <i class="fas fa-user-plus"></i></button>
   </form>
 
@@ -13,7 +13,7 @@
 </h2>
 
 <div class="profile-nav nav nav-tabs pt-2 mb-4">
-  <a href="/profile/<%= user.username %>" class="profile-nav-link nav-item nav-link <%= currentPage == 'posts' ? 'active' : '' %>"> Posts: <%= count.posts %></a>
-  <a href="/profile/<%= user.username %>/followers" class="profile-nav-link nav-item nav-link <%= currentPage == 'followers' ? 'active' : '' %>">Followers: <%= count.followers %></a>
-  <a href="/profile/<%= user.username %>/following" class="profile-nav-link nav-item nav-link <%= currentPage == 'following' ? 'active' : '' %>">Following: <%= count.following %></a>
+  <a href="/profile/<%= profileUser.username %>" class="profile-nav-link nav-item nav-link <%= currentPage == 'posts' ? 'active' : '' %>"> Posts: <%= count.posts %></a>
+  <a href="/profile/<%= profileUser.username %>/followers" class="profile-nav-link nav-item nav-link <%= currentPage == 'followers' ? 'active' : '' %>">Followers: <%= count.followers %></a>
+  <a href="/profile/<%= profileUser.username %>/following" class="profile-nav-link nav-item nav-link <%= currentPage == 'following' ? 'active' : '' %>">Following: <%= count.following %></a>
 </div>

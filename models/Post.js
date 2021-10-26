@@ -1,4 +1,6 @@
 const postsCollection = require("../db").db().collection("posts")
+const followsCollection = require("../db").db().collection("follows")
+
 const ObjectID = require("mongodb").ObjectID
 const User = require("./User")
 const sanitizeHTML = require("sanitize-html")
@@ -184,6 +186,21 @@ Post.countPostsByAuthor = function (userid) {
       resolve(postCount)
     } catch {
       reject()
+    }
+  })
+}
+
+Post.getFeed = function (id) {
+  return new Promise(async (resolve, reject) => {
+    let followDocs = await followsCollection.find({ followingId: new ObjectID(id) }).toArray() // take session string for DB match
+
+    if (followDocs.length) {
+      followDocs.map(async function (doc) {
+        let posts = await Post.findByAuthorId(doc.followedId)
+        resolve(posts)
+      })
+    } else {
+      resolve([])
     }
   })
 }
