@@ -160,3 +160,13 @@ exports.profileFollowingScreen = async function (req, res) {
     res.render("404")
   }
 }
+
+exports.doesUsernameExist = function (req, res) {
+  User.findUserByUsername(req.body.username)
+    .then(() => {
+      res.json(true)
+    })
+    .catch(() => {
+      res.json(false)
+    })
+}
