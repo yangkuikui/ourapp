@@ -1,3 +1,5 @@
+import DOMPurify from "dompurify"
+
 export default class Chat {
   constructor() {
     this.openedYet = false // not yet opened
@@ -5,7 +7,7 @@ export default class Chat {
     this.injectHTML()
     this.chatField = document.querySelector("#chatField")
     this.chatForm = document.querySelector("#chatForm")
-
+    this.chatLog = document.querySelector("#chat")
     this.openChat = document.querySelector(".header-chat-icon")
     this.closeChat = document.querySelector(".chat-title-bar-close")
     this.events()
@@ -26,6 +28,21 @@ export default class Chat {
       // we are free to create as many types of events as we want
       message: this.chatField.value
     })
+    this.chatLog.insertAdjacentHTML(
+      "beforeend",
+      DOMPurify.sanitize(`
+    <div class="chat-self">
+    <div class="chat-message">
+      <div class="chat-message-inner">
+        ${this.chatField.value}
+      </div>
+    </div>
+    <img class="chat-avatar avatar-tiny" src="${this.avatar}">
+  </div>
+    `)
+    )
+    // let chatlog to scroll down to the very bottom
+    this.chatLog.scrollTop = this.chatLog.scrollHeight
     this.chatField.value = ""
     this.chatField.focus()
   }
@@ -34,10 +51,31 @@ export default class Chat {
     // open a connection between browser and server
     this.socket = io()
 
+    this.socket.on("welcome", data => {
+      this.username = data.username
+      this.avatar = data.avatar
+    })
+
     // to receive msg sended from server
     this.socket.on("chatMsgFromServer", data => {
-      alert(data.message)
+      this.displayMsgFromServer(data)
     })
+  }
+
+  displayMsgFromServer(data) {
+    this.chatLog.insertAdjacentHTML(
+      "beforeend",
+      DOMPurify.sanitize(`
+      <div class="chat-other">
+      <a href="/profile/${data.username}"><img class="avatar-tiny" src="${data.avatar}"></a>
+      <div class="chat-message"><div class="chat-message-inner">
+        <a href="/profile/${data.username}"><strong>${data.username}:</strong></a>
+        ${data.message}
+      </div></div>
+    </div>
+    `)
+    )
+    this.chatLog.scrollTop = this.chatLog.scrollHeight
   }
 
   showChat() {
@@ -47,6 +85,7 @@ export default class Chat {
     this.openedYet = true // only set a connection at the first time to open chat.
 
     this.chatWrapper.classList.add("chat--visible")
+    this.chatField.focus()
   }
 
   hideChat() {
@@ -62,6 +101,4 @@ export default class Chat {
     </form>
     `
   }
-
-  // methods
 }

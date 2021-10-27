@@ -104,7 +104,7 @@ exports.profilePostsScreen = function (req, res) {
 
   Post.findByAuthorId(req.profileUser.id)
     .then(posts => {
-      res.render("profile", { isVisitorsProfile: req.isVisitorsProfile, count: { posts: req.postCount, followers: req.followerCount, following: req.followingCount }, currentPage: "posts", profileUser: req.profileUser, posts: posts, isFollowing: req.isFollowing })
+      res.render("profile", { title: `Profile for ${req.profileUser.username}`, isVisitorsProfile: req.isVisitorsProfile, count: { posts: req.postCount, followers: req.followerCount, following: req.followingCount }, currentPage: "posts", profileUser: req.profileUser, posts: posts, isFollowing: req.isFollowing })
     })
     .catch(() => {
       res.render("404")
