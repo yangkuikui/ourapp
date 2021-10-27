@@ -5,6 +5,14 @@ export default class RegistrationForm {
     this.insertValidationElements()
     this.username = document.querySelector("#username-register")
     this.username.previousValue = ""
+    this.email = document.querySelector("#email-register")
+    this.email.previousValue = ""
+    this.password = document.querySelector("#password-register")
+    this.password.previousValue = ""
+    this.form = document.querySelector("#registration-form")
+    this.username.isUnique = false
+    this.email.isUnique = false
+
     this.events()
   }
 
@@ -12,6 +20,40 @@ export default class RegistrationForm {
     this.username.addEventListener("keyup", () => {
       this.isDifferent(this.username, this.usernameHandler)
     })
+    this.email.addEventListener("keyup", () => {
+      this.isDifferent(this.email, this.emailHandler)
+    })
+    this.password.addEventListener("keyup", () => {
+      this.isDifferent(this.password, this.passwordHandler)
+    })
+    // prevent a quick tab key switch.
+    this.username.addEventListener("blur", () => {
+      this.isDifferent(this.username, this.usernameHandler)
+    })
+    this.email.addEventListener("blur", () => {
+      this.isDifferent(this.email, this.emailHandler)
+    })
+    this.password.addEventListener("blur", () => {
+      this.isDifferent(this.password, this.passwordHandler)
+    })
+    // submit event
+    this.form.addEventListener("submit", e => {
+      e.preventDefault()
+      this.formSubmitHandler()
+    })
+  }
+
+  formSubmitHandler() {
+    // avoid user to submit directly without input
+    this.usernameImmediately()
+    this.usernameAfterDelay()
+    this.emailAfterDelay()
+    this.passwordAfterDelay()
+    this.passwordImmediately()
+
+    if (this.username.isUnique && this.email.isUnique && !this.username.errors && !this.email.errors && !this.password.errors) {
+      this.form.submit()
+    }
   }
 
   isDifferent(el, handler) {
@@ -21,12 +63,63 @@ export default class RegistrationForm {
 
     el.previousValue = el.value
   }
+  emailHandler() {
+    this.email.errors = false
+    clearTimeout(this.email.timer)
+    this.email.timer = setTimeout(() => this.emailAfterDelay(), 800)
+  }
+
+  emailAfterDelay() {
+    if (this.email.value != "" && !/^\S+@\S+$/.test(this.email.value)) {
+      this.showValidationError(this.email, "You must provide a valid Email address.")
+    }
+
+    if (!this.email.errors) {
+      axios
+        .post("/doesemailExist", { email: this.email.value })
+        .then(response => {
+          console.log(response)
+          if (response.data) {
+            this.showValidationError(this.email, "That email is already used.")
+            this.email.isUnique = false
+          } else {
+            this.email.isUnique = true
+            this.hideValidationError(this.email)
+          }
+        })
+        .catch(() => {
+          console.log("try again")
+        })
+    }
+  }
+
+  passwordHandler() {
+    this.password.errors = false
+    this.passwordImmediately()
+    clearTimeout(this.password.timer)
+    this.password.timer = setTimeout(() => this.passwordAfterDelay(), 800)
+  }
+
+  passwordImmediately() {
+    if (this.password.value.length > 50) {
+      this.showValidationError(this.password, "Password can not exceed 50 characters.")
+    }
+    if (!this.password.errors) {
+      this.hideValidationError(this.password)
+    }
+  }
+
+  passwordAfterDelay() {
+    if (this.password.value.length < 12) {
+      this.showValidationError(this.password, "Password must be at least 12 charactoers.")
+    }
+  }
 
   usernameHandler() {
     this.username.errors = false
     this.usernameImmediately()
     clearTimeout(this.username.timer)
-    this.username.timer = setTimeout(() => this.usernameAfterDelay(), 3000)
+    this.username.timer = setTimeout(() => this.usernameAfterDelay(), 800)
   }
 
   usernameImmediately() {

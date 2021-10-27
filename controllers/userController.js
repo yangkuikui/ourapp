@@ -170,3 +170,13 @@ exports.doesUsernameExist = function (req, res) {
       res.json(false)
     })
 }
+
+exports.doesEmailExist = function (req, res) {
+  User.checkEmail(req.body.email)
+    .then(() => {
+      res.json(true)
+    })
+    .catch(() => {
+      res.json(false)
+    })
+}
