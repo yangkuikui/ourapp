@@ -8,6 +8,10 @@ const csrf = require("csurf")
 
 const app = express()
 
+app.use(express.urlencoded({ extended: false })) // let express to add user submitted data onto request object.
+app.use(express.json()) // send json data
+app.use("/api", require("./router-api.js"))
+
 let sessionOptions = session({
   secret: "JavaScript is so cool!",
   store: new MongoStore({ client: require("./db") }),
@@ -40,9 +44,6 @@ app.use(function (req, res, next) {
 }) // this middleware function should be above router to let every router to use it.
 
 const router = require("./router") // require does 2 things. #1 execute that file immediately. #2 return whatever that file exports
-
-app.use(express.urlencoded({ extended: false })) // let express to add user submitted data onto request object.
-app.use(express.json()) // send json data
 
 app.use(express.static("public"))
 app.set("views", "views")

@@ -7,6 +7,18 @@ const User = require("../models/User")
 const Post = require("../models/Post")
 const Follow = require("../models/Follow")
 
+exports.apiLogin = function (req, res) {
+  let user = new User(req.body)
+  user
+    .login()
+    .then(result => {
+      res.json("success!")
+    })
+    .catch(e => {
+      res.json("sorry.")
+    })
+}
+
 exports.login = function (req, res) {
   let user = new User(req.body)
   user
