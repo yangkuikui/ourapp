@@ -1,6 +1,7 @@
 import axios from "axios"
 export default class RegistrationForm {
   constructor() {
+    this._csrf = document.querySelector('[name="_csrf"]').value
     this.allFields = document.querySelectorAll("#registration-form .form-control")
     this.insertValidationElements()
     this.username = document.querySelector("#username-register")
@@ -76,7 +77,7 @@ export default class RegistrationForm {
 
     if (!this.email.errors) {
       axios
-        .post("/doesemailExist", { email: this.email.value })
+        .post("/doesemailExist", { email: this.email.value, _csrf: this._csrf })
         .then(response => {
           console.log(response)
           if (response.data) {
@@ -147,13 +148,13 @@ export default class RegistrationForm {
   }
 
   usernameAfterDelay() {
-    if (this.username.value.length < 3) {
+    if (this.username.value != "" && this.username.value.length < 3) {
       this.showValidationError(this.username, "Username must be at least 3 charactoers.")
     }
 
     if (!this.username.errors) {
       axios
-        .post("/doesUsernameExist", { username: this.username.value })
+        .post("/doesUsernameExist", { username: this.username.value, _csrf: this._csrf })
         .then(response => {
           console.log(response)
           if (response.data) {
