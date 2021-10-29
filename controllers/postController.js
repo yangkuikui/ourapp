@@ -1,6 +1,28 @@
 const { rawListeners } = require("../app")
 const Post = require("../models/Post")
 
+exports.apiCreate = function (req, res) {
+  let post = new Post(req.body, req.apiUser._id)
+  post
+    .create()
+    .then(id => {
+      res.json("Congrats!")
+    })
+    .catch(errors => {
+      res.json(errors)
+    })
+}
+
+exports.apiDelete = function (req, res) {
+  Post.delete(req.params.id, req.apiUser._id)
+    .then(id => {
+      res.json("success!")
+    })
+    .catch(errors => {
+      res.json(errors)
+    })
+}
+
 exports.viewCreateScreen = function (req, res) {
   res.render("create-post")
 }

@@ -6,17 +6,37 @@
 const User = require("../models/User")
 const Post = require("../models/Post")
 const Follow = require("../models/Follow")
+const jwt = require("jsonwebtoken")
 
 exports.apiLogin = function (req, res) {
   let user = new User(req.body)
   user
     .login()
     .then(result => {
-      res.json("success!")
+      res.json(jwt.sign({ _id: user.data._id }, process.env.JWTSECRET, { expiresIn: "7d" }))
     })
     .catch(e => {
       res.json("sorry.")
     })
+}
+
+exports.apiMustBeLoggedIn = function (req, res, next) {
+  try {
+    req.apiUser = jwt.verify(req.body.token, process.env.JWTSECRET)
+    next()
+  } catch {
+    res.json("Sorry, invalid token.")
+  }
+}
+
+exports.apiGetPostsByUsername = async function (req, res) {
+  try {
+    let authorDoc = await User.findUserByUsername(req.params.username)
+    let posts = await Post.findByAuthorId(authorDoc.id)
+    res.json(posts)
+  } catch {
+    res.json("sorry, invalid request.")
+  }
 }
 
 exports.login = function (req, res) {
